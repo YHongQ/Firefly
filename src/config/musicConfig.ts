@@ -21,7 +21,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 
 	// 是否显启用歌词
 	showLyrics: true,
-
+// https://music.163.com/playlist?id=709693441&uct2=U2FsdGVkX18PgAcPXwXVrqFzMhcclLhTSmJHA5qetEI=
 	// Meting API 配置
 	meting: {
 		// Meting API 地址
@@ -32,7 +32,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 		// 类型：song=单曲, playlist=歌单, album=专辑, search=搜索, artist=艺术家
 		type: "playlist",
 		// 歌单/专辑/单曲 ID 或搜索关键词
-		id: "10046455237",
+		id: "709693441",
 		// 认证 token（可选）
 		auth: "",
 		// 备用 API 配置（当主 API 失败时使用）

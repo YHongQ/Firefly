@@ -13,21 +13,24 @@ export const siteConfig: SiteConfig = {
 	subtitle: "HONG",
 
 	// 站点 URL
-	site_url: "https://firefly.cuteleaf.cn",
+	site_url: "https://firelyblog.2142479640.workers.dev",
 
 	// 站点描述
 	description:"HONG的个人博客",
 
 	// 站点关键词
 	keywords: [
-		"Hello World",
-		"Fuwari"
+		"溄",
+		"HONG",
+		"个人博客",
+		"JAVA",
+		"AI Infrastructure",
 	],
 
 	// 主题色
 	themeColor: {
 		// 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
-		hue: 240,
+		hue: 235,
 		// 是否对访问者隐藏主题色选择器
 		fixed: false,
 		// 默认模式："light" 亮色，"dark" 暗色，"system" 跟随系统
@@ -44,18 +47,18 @@ export const siteConfig: SiteConfig = {
 		// 是否开启卡片边框和阴影，开启后让网站更有立体感
 		border: true,
 		// 是否让卡片风格跟随主题色相
-		followTheme: false,
+		followTheme: true,
 	},
 
 	// Favicon 配置
 	favicon: [
 		{
 			// 图标文件路径
-			src: "/favicon/favicon.ico",
+			src: "/favicon/favicon.ico", 
 			// 可选，指定主题 'light' | 'dark'
 			// theme: "light",
 			// 可选，图标大小
-			// sizes: "32x32",
+			sizes: "32x32",
 		},
 	],
 
@@ -68,12 +71,12 @@ export const siteConfig: SiteConfig = {
 		// 3. 本地图片（src目录，自动优化但会增加构建时间，推荐）: { type: "image", value: "assets/images/logo.webp", alt: "Logo" }
 		// 4. 网络图片: { type: "url", value: "https://example.com/logo.png", alt: "Logo" }
 		logo: {
-			type: "image",
-			value: "assets/images/firefly.png",
-			alt: "🍀",
+			type: "icon",
+			value: "streamline-emojis:clown-face",
+			alt: "",
 		},
 		// 导航栏标题
-		title: "Firefly",
+		title: "溄",
 		// 全宽导航栏，导航栏是否占满屏幕宽度
 		widthFull: false,
 		// 导航菜单对齐方式，left：左对齐，center：居中
@@ -109,15 +112,15 @@ export const siteConfig: SiteConfig = {
 	// OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
 	generateOgImages: false,
 
-	// bangumi配置
-	bangumi: {
-		// Bangumi用户ID
-		userId: "1143164",
-		// 条目类型排序，数组中的类型将按顺序优先展示
-		// 可选值: "anime" | "book" | "music" | "game" | "real" (暂不支持"real"类型)
-		// 未列出的类型将按默认顺序排在后面
-		categoryOrder: ["anime", "book", "music", "game"],
-	},
+	// // bangumi配置
+	// bangumi: {
+	// 	// Bangumi用户ID
+	// 	userId: "1143164",
+	// 	// 条目类型排序，数组中的类型将按顺序优先展示
+	// 	// 可选值: "anime" | "book" | "music" | "game" | "real" (暂不支持"real"类型)
+	// 	// 未列出的类型将按默认顺序排在后面
+	// 	categoryOrder: ["anime", "book", "music", "game"],
+	// },
 
 	// 页面开关配置 - 控制特定页面的访问权限，设为false会返回404
 	// bangumi的数据为编译时获取的，所以不是实时数据，请配置bangumi.userId
@@ -129,7 +132,7 @@ export const siteConfig: SiteConfig = {
 		// 留言板页面开关，需要配置评论系统
 		guestbook: true,
 		// 番组计划页面开关，含追番、游戏、书籍和音乐，dev调试时只获取一页数据，build才会获取全部数据
-		bangumi: true,
+		bangumi: false,
 		// 相册页面开关
 		gallery: true,
 	},
@@ -169,7 +172,7 @@ export const siteConfig: SiteConfig = {
 		// Google Analytics ID
 		googleAnalyticsId: "",
 		// Microsoft Clarity ID
-		microsoftClarityId: "",
+		microsoftClarityId: "wrxq6irf3p",
 		// Umami 统计配置
 		umamiAnalytics: {
 			// Umami Website ID
