@@ -46,15 +46,18 @@ export const backgroundWallpaper: BackgroundWallpaperConfig = {
 			"assets/images/HONGWallpaper/1309624.jpeg",
 			"assets/images/HONGWallpaper/gm1.png",
 			"assets/images/HONGWallpaper/lufei1.png",
+			"assets/images/HONGWallpaper/4.png",
+			"assets/images/HONGWallpaper/5.png",
+			"assets/images/HONGWallpaper/6.png",
+			"assets/images/HONGWallpaper/7.png",
+			"assets/images/HONGWallpaper/23.png",
 		],
 		// 移动背景图片（支持单张或多张随机）
-		// mobile: "assets/images/MobileWallpaper/m1.avif",
+		// mobile: "assets/images/MobileWallpaper/m1.avif","assets/images/MobileWallpaper/m2.avif"
 		mobile: [
-			"assets/images/HONGWallpaper/毛泽东.png",
-			"assets/images/HONGWallpaper/909769.png",
-			"assets/images/HONGWallpaper/1309624.jpeg",
-			"assets/images/HONGWallpaper/gm1.png",
-			"assets/images/HONGWallpaper/lufei1.png",
+			"assets/images/PhoneWallpaper/1.png",
+			"assets/images/PhoneWallpaper/2.png",
+
 		],
 	},
 	// 横幅壁纸和全屏壁纸共享配置

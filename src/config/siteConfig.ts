@@ -40,7 +40,7 @@ export const siteConfig: SiteConfig = {
 	// 页面整体宽度（单位：rem）
 	// 数值越大可以让页面内容区域更宽
 	// 在使用单侧栏边栏时，建议调低一些宽度以获得更好的视觉效果。
-	pageWidth: 110,
+	pageWidth: 100,
 
 	// 网站Card样式配置
 	card: {
@@ -54,11 +54,11 @@ export const siteConfig: SiteConfig = {
 	favicon: [
 		{
 			// 图标文件路径
-			src: "/favicon/favicon.ico", 
+			src: "/favicon/cat.png", 
 			// 可选，指定主题 'light' | 'dark'
 			// theme: "light",
 			// 可选，图标大小
-			sizes: "32x32",
+			sizes: "128x128",
 		},
 	],
 
@@ -76,7 +76,7 @@ export const siteConfig: SiteConfig = {
 			alt: "",
 		},
 		// 导航栏标题
-		title: "溄",
+		title: "HONG",
 		// 全宽导航栏，导航栏是否占满屏幕宽度
 		widthFull: false,
 		// 导航菜单对齐方式，left：左对齐，center：居中
