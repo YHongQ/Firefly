@@ -3,6 +3,7 @@ import { Icon } from "astro-icon/components";
 import ImageWrapper from "@/components/common/ImageWrapper.astro";
 import { profileConfig } from "@/config/profileConfig";
 import { url } from "@/utils/url-utils";
+import TwikooSiteStats from "@/components/widget/TwikooSiteStats.astro";
 ---
 
 <div class="card-base p-3">
@@ -44,6 +45,7 @@ import { url } from "@/utils/url-utils";
     <div class="text-center text-neutral-400 mb-2.5 transition">
       {profileConfig.bio}
     </div>
+    <TwikooSiteStats />
         <div class="flex flex-wrap gap-2 justify-center mb-1">
             {profileConfig.links.length > 1 && profileConfig.links.map(item =>
                     {

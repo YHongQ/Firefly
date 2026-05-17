@@ -230,6 +230,7 @@ export type CommentConfig = {
 		region?: string;
 		lang?: string;
 		visitorCount?: boolean;
+		accessToken?: string;
 	};
 	waline?: {
 		serverURL: string;

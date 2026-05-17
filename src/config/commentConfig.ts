@@ -11,6 +11,8 @@ export const commentConfig: CommentConfig = {
 		lang: "zh-CN",
 		// 是否启用文章访问量统计功能
 		visitorCount: true,
+		// 访问令牌（可选）
+		accessToken: "",
 	},
 
 	//waline评论系统配置

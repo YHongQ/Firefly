@@ -25,6 +25,14 @@ export const siteConfig: SiteConfig = {
 		"个人博客",
 		"JAVA",
 		"AI Infrastructure",
+		"MySQL",
+		"Redis",
+		"Twikoo",
+		"Spring Boot",
+		"Kafka",
+		"SQL",
+		"Linux",
+		"Git",
 	],
 
 	// 主题色

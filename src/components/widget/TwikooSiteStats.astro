@@ -1,0 +1,47 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<div class="flex justify-center gap-4 text-sm text-neutral-500 dark:text-neutral-400 mb-2.5">
+  <span class="flex items-center gap-1">
+    <Icon name="material-symbols:visibility-outline" class="text-lg" />
+    <span id="twikoo-total-views">--</span>
+    <span class="ml-0.5">总浏览</span>
+  </span>
+  <span class="text-neutral-300">·</span>
+  <span class="flex items-center gap-1">
+    <Icon name="material-symbols:article-outline" class="text-lg" />
+    <span id="twikoo-total-articles">--</span>
+    <span class="ml-0.5">文章数</span>
+  </span>
+</div>
+
+<script is:inline>
+  // 获取Twikoo统计数据
+  async function fetchTwikooStats() {
+    try {
+      const response = await fetch('/api/twikoo-stats.json');
+      const data = await response.json();
+      
+      if (data.totalViews !== undefined) {
+        document.getElementById('twikoo-total-views').textContent = data.totalViews || 0;
+        document.getElementById('twikoo-total-articles').textContent = data.totalArticles || 0;
+      }
+    } catch (error) {
+      console.error('获取Twikoo统计数据失败:', error);
+      // 不显示错误，而是保持默认值或显示0
+      document.getElementById('twikoo-total-views').textContent = '0';
+      document.getElementById('twikoo-total-articles').textContent = '0';
+    }
+  }
+
+  // 页面加载完成后获取数据
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fetchTwikooStats);
+  } else {
+    fetchTwikooStats();
+  }
+  
+  // 如果使用Swup页面切换，也需要重新获取数据
+  document.addEventListener('swup:contentReplaced', fetchTwikooStats);
+</script>
