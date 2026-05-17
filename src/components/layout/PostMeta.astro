@@ -143,8 +143,11 @@ const path = customPath || (id ? `/posts/${id}` : "");
           <span class="text-50 text-sm font-medium mr-1">
             {i18n(I18nKey.pageViews)}
           </span>
-          <span class="text-50 text-sm font-medium" id="twikoo_visitors">
+          <span class="text-50 text-sm font-medium" id="twikoo_visitors" data-post-id={id}>
             {i18n(I18nKey.pageViewsLoading)}
+          </span>
+          <span class="text-xs text-red-500 dark:text-red-400 ml-2 hidden" id="twikoo_visitors_error">
+            {i18n(I18nKey.pageViewsError)}
           </span>
         </div>
       )
