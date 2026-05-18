@@ -76,9 +76,10 @@ export const backgroundWallpaper: BackgroundWallpaperConfig = {
 			titleSize: "3.8rem",
 			// 主页横幅副标题
 			subtitle: [
-				"What Can I Say !",
+				"Studying !",
 				"Just Enjoy Your Life !",
-				"Manba Out !"
+				"Coding !",
+				"Joker !",
 			],
 			// 主页横幅副标题字体大小
 			subtitleSize: "1.5rem",
