@@ -1,0 +1,5 @@
+具备优秀的 C/C++（Modern C++14/17）编程能力，熟悉 ARM64/x86_64 汇编，能熟练使用 GDB、LLDB、perf、simpleperf 进行调试与性能剖析
+2. 内核深度：
+深入理解 Linux 内核核心机制（进程/线程调度、内存分配、页表机制、中断处理、Futex 同步原语），能将内核思维映射到虚拟机实现（如线程状态机、Safe-Point 同步、Memory Barrier 语义）
+熟悉虚拟机架构：对象内存布局、GC Root 扫描、字节码解释模型、栈帧管理，有 AOSP/ART/OpenJDK/JVM 源码阅读或模块开发经验者优先
+3. 问题解决：具备独立分析系统级问题的能力（如通过 Tombstone/StackTrace 分析 Native Crash 根因），有 ACM/ICPC 区域赛获奖经历或顶级开源社区（AOSP、OpenJDK、V8）优质贡献者优先
