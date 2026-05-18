@@ -6,7 +6,6 @@ import { commentConfig } from "@/config";
 import { url } from "@/utils/url-utils";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
-
 const isTwikooEnabled = commentConfig.type === 'twikoo' && commentConfig.twikoo?.envId;
 ---
 
@@ -96,6 +95,11 @@ const isTwikooEnabled = commentConfig.type === 'twikoo' && commentConfig.twikoo?
                     }
             )}
             {profileConfig.links.length == 1 && (function(item){
+                const showName = item.showName;
+                const className = showName 
+                    ? "btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95" 
+                    : "btn-regular rounded-lg h-10 w-10 active:scale-90";
+
                 if (item.url.startsWith("mailto:")) {
                         const encodedEmail = Buffer.from(item.url.replace("mailto:", "")).toString("base64");
                         return <a rel="me" aria-label={item.name} href="#" data-encoded-email={encodedEmail} onclick={`
@@ -110,15 +114,15 @@ const isTwikooEnabled = commentConfig.type === 'twikoo' && commentConfig.twikoo?
                                             }).call(this);
                                         `.replace(/\s+/g, " ").trim()
                                     },
-                                    class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95">
+                                    class={className}>
                             <Icon name={item.icon} class="text-[1.5rem]"></Icon>
-                            {item.name}
+                            {showName && item.name}
                         </a>
                     } else {
                         return <a rel="me" aria-label={item.name} href={item.url} target="_blank"
-                                            class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95">
+                                            class={className}>
                                 <Icon name={item.icon} class="text-[1.5rem]"></Icon>
-                                {item.name}
+                                {showName && item.name}
                             </a>
                     }
             })(profileConfig.links[0])}

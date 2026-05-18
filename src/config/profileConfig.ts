@@ -22,16 +22,10 @@ export const profileConfig: ProfileConfig = {
 	// showName: true 时显示图标和名称，false 时只显示图标
 	links: [
 		{
-			name: "qq",
+			name: "QQ",
 			icon: "fa7-brands:qq",
-			// 跳转QQ加好友链接，格式为：`https://qm.qq.com/cgi-bin/qm/qr?k=<2142479640>`，其中 `<your_qq_number>` 替换为你的QQ号码
+			// 跳转QQ加好友链接，格式为：https://qm.qq.com/cgi-bin/qm/qr?k=<2142479640>，其中 <your_qq_number> 替换为你的QQ号码
 			url: "https://qm.qq.com/q/SqIlKaK9sy",
-			showName: false,
-		},
-		{
-			name: "GitHub",
-			icon: "fa7-brands:github",
-			url: "https://github.com/YHongQ/",
 			showName: false,
 		},
 		{
@@ -40,6 +34,13 @@ export const profileConfig: ProfileConfig = {
 			url: "mailto:hongqiang.yan@qq.com",
 			showName: false,
 		},
+		{
+			name: "GitHub",
+			icon: "fa7-brands:git", //更换图标为其他版本的 GitHub 图标 
+			url: "https://github.com/YHongQ/",
+			showName: false,
+		},
+
 		// {
 		// 	name: "RSS",
 		// 	icon: "fa7-solid:rss",

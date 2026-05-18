@@ -29,7 +29,7 @@
 如果你想和我交流技术问题，分享有趣的想法，或者只是想打个招呼，欢迎通过以下方式联系我：
 
 - 💻 **GitHub**: [YHongQ](https://github.com/YHongQ/)
-- ✉️ **Email**: [hongqiang.yan@qq.com](mailto:hongqiang.yan@qq.com)
+- ✉️ **Email**: [hongqiang.yan@qq.com](mailto:hongqiangyan@qq.com)
 - 🐧 **QQ交流：[2142479640]()**
 
 ---
