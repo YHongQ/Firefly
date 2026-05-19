@@ -25,7 +25,7 @@ export const friendsConfig: FriendLink[] = [
 	{
 		title: "科比",
 		imgurl:
-			"https://baike.baidu.com/pic/%E7%A7%91%E6%AF%94%C2%B7%E5%B8%83%E8%8E%B1%E6%81%A9%E7%89%B9/318773/1/e61190ef76c6a7efce1b8d909ea2b851f3deb48fc877?fromModule=lemma_top-image&ct=single#aid=1&pic=e61190ef76c6a7efce1b8d909ea2b851f3deb48fc877",
+			"https://cn.bing.com/images/search?view=detailV2&ccid=NPA9JbA8&id=A5ECC6D7574A6FBD13075D527AA548565C105F2D&thid=OIP.NPA9JbA80G6ujwa94ZrmmgHaNK&mediaurl=https%3a%2f%2fpic2.zhimg.com%2fv2-e12664feae760d3101ba7d83d47a91b4_r.jpg%3fsource%3d1940ef5c&exph=1920&expw=1080&q=%e7%a7%91%e6%af%94%e5%9b%be%e7%89%87&mode=overlay&FORM=IQFRBA&ck=C7D5429D937A8BA2F09D3BC6E73FFAF4&selectedIndex=0&idpp=serp&ajaxhist=0&ajaxserp=0",
 		desc: "科比·布莱恩特（Kobe Bryant），美国职业篮球运动员，被认为是NBA历史上最伟大的球员之一。",
 		siteurl: "https://baike.baidu.com/item/%E7%A7%91%E6%AF%94%C2%B7%E5%B8%83%E8%8E%B1%E6%81%A9%E7%89%B9/318773",
 		tags: ["Blog"],
