@@ -1,5 +1,0 @@
-D:/goal/CS/C++/out/build/GCC 8.1.0 x86_64-w64-mingw32/CMakeFiles/main.dir
-D:/goal/CS/C++/out/build/GCC 8.1.0 x86_64-w64-mingw32/CMakeFiles/package.dir
-D:/goal/CS/C++/out/build/GCC 8.1.0 x86_64-w64-mingw32/CMakeFiles/package_source.dir
-D:/goal/CS/C++/out/build/GCC 8.1.0 x86_64-w64-mingw32/CMakeFiles/edit_cache.dir
-D:/goal/CS/C++/out/build/GCC 8.1.0 x86_64-w64-mingw32/CMakeFiles/rebuild_cache.dir
