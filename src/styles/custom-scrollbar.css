@@ -18,32 +18,32 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
+    background: linear-gradient(180deg, oklch(0.70 0.14 var(--hue) / 0.3) 0%, oklch(0.70 0.14 var(--hue) / 0.5) 100%);
     border-radius: 3px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.2s ease;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.3) 100%);
+    background: linear-gradient(180deg, oklch(0.70 0.14 var(--hue) / 0.5) 0%, oklch(0.70 0.14 var(--hue) / 0.7) 100%);
     border-color: rgba(255, 255, 255, 0.2);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:active {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.4) 100%);
+    background: linear-gradient(180deg, oklch(0.70 0.14 var(--hue) / 0.6) 0%, oklch(0.70 0.14 var(--hue) / 0.8) 100%);
 }
 
 /* 暗色模式滚动条 - Webkit */
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.2) 100%);
+    background: linear-gradient(180deg, oklch(0.75 0.14 var(--hue) / 0.3) 0%, oklch(0.75 0.14 var(--hue) / 0.5) 100%);
     border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.3) 100%);
+    background: linear-gradient(180deg, oklch(0.75 0.14 var(--hue) / 0.5) 0%, oklch(0.75 0.14 var(--hue) / 0.7) 100%);
     border-color: rgba(0, 0, 0, 0.2);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:active {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.4) 100%);
+    background: linear-gradient(180deg, oklch(0.75 0.14 var(--hue) / 0.6) 0%, oklch(0.75 0.14 var(--hue) / 0.8) 100%);
 }

@@ -215,6 +215,17 @@ html {
         @apply transition-all duration-300 border border-(--line-divider) shadow-xs;
     }
 
+    /* 卡片悬停蓝色调阴影效果 */
+    .enable-card-border .card-base:hover {
+        box-shadow: 0 8px 25px oklch(0.72 0.16 var(--hue) / 0.15);
+        border-color: oklch(0.72 0.16 var(--hue) / 0.3);
+    }
+
+    .dark .enable-card-border .card-base:hover {
+        box-shadow: 0 8px 25px oklch(0.75 0.16 var(--hue) / 0.25);
+        border-color: oklch(0.75 0.16 var(--hue) / 0.4);
+    }
+
     /* 导航栏样式适配 */
     .enable-card-border #navbar > div:not(.absolute) {
         @apply transition-all duration-300 border shadow-xs;
@@ -266,6 +277,14 @@ html {
     .link {
         @apply transition-colors duration-150 rounded-md p-1 -m-1 expand-animation;
     }
+
+    .link:hover {
+        text-shadow: 0 0 8px oklch(0.72 0.16 var(--hue) / 0.4);
+    }
+
+    .dark .link:hover {
+        text-shadow: 0 0 8px oklch(0.75 0.16 var(--hue) / 0.5);
+    }
     .link-lg {
         @apply transition-colors duration-150 rounded-md p-1.5 -m-1.5 expand-animation;
     }
@@ -305,6 +324,23 @@ html {
     .btn-regular {
         @apply transition-colors duration-150 flex items-center justify-center bg-(--btn-regular-bg) hover:bg-(--btn-regular-bg-hover) active:bg-(--btn-regular-bg-active)
         text-(--btn-content) dark:text-white/75
+    }
+
+    /* 蓝色调按钮光晕效果 */
+    .btn-regular:hover {
+        box-shadow: 0 0 15px oklch(0.72 0.16 var(--hue) / 0.3);
+    }
+
+    .btn-card:hover {
+        box-shadow: 0 0 12px oklch(0.72 0.16 var(--hue) / 0.2);
+    }
+
+    .dark .btn-regular:hover {
+        box-shadow: 0 0 15px oklch(0.75 0.16 var(--hue) / 0.4);
+    }
+
+    .dark .btn-card:hover {
+        box-shadow: 0 0 12px oklch(0.75 0.16 var(--hue) / 0.3);
     }
 
     .link-underline {
@@ -437,7 +473,13 @@ html {
 }
 
 ::selection {
-    background-color: var(--selection-bg)
+    background-color: oklch(0.72 0.16 var(--hue) / 0.3);
+    color: inherit;
+}
+
+.dark ::selection {
+    background-color: oklch(0.75 0.16 var(--hue) / 0.4);
+    color: inherit;
 }
 
 .dash-line {

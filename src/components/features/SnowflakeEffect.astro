@@ -1,0 +1,593 @@
+---
+import { sakuraConfig } from "@/config";
+
+const config = sakuraConfig;
+---
+
+<script is:inline define:vars={{ sakuraConfig: config }}>
+		let windowWidth = window.innerWidth;
+		let windowHeight = window.innerHeight;
+
+		// 雪花对象类
+		class Snowflake {
+			constructor(x, y, s, r, a, fn, idx, limitArray, config) {
+				this.x = x;
+				this.y = y;
+				this.s = s;
+				this.r = r;
+				this.a = a;
+				this.fn = fn;
+				this.idx = idx;
+				this.limitArray = limitArray;
+				this.config = config;
+				this.type = Math.floor(Math.random() * 4); // 0-3: 四种不同的雪花形状
+				this.colorType = Math.floor(Math.random() * 3); // 0-2: 三种不同的蓝色调
+			}
+
+			draw(cxt) {
+				cxt.save();
+				cxt.translate(this.x, this.y);
+				cxt.rotate(this.r);
+				cxt.globalAlpha = this.a;
+				cxt.lineWidth = 1.5 * this.s;
+				
+				const size = 20 * this.s;
+				
+				let snowflakeColor;
+				if (this.colorType === 0) {
+					snowflakeColor = `rgba(200, 220, 255, ${this.a})`;
+				} else if (this.colorType === 1) {
+					snowflakeColor = `rgba(180, 200, 255, ${this.a})`;
+				} else {
+					snowflakeColor = `rgba(220, 235, 255, ${this.a})`;
+				}
+				
+				cxt.fillStyle = snowflakeColor;
+				cxt.strokeStyle = snowflakeColor;
+				
+				if (this.type === 0) {
+					this.drawClassicSnowflake(cxt, size);
+				} else if (this.type === 1) {
+					this.drawComplexSnowflake(cxt, size);
+				} else if (this.type === 2) {
+					this.drawSimpleStarSnowflake(cxt, size);
+				} else {
+					this.drawFernSnowflake(cxt, size);
+				}
+				
+				cxt.restore();
+			}
+
+			drawClassicSnowflake(cxt, size) {
+				cxt.beginPath();
+				
+				for (let i = 0; i < 6; i++) {
+					const angle = (i * 60) * Math.PI / 180;
+					
+					// 主分支
+					const mainEndX = Math.cos(angle) * size;
+					const mainEndY = Math.sin(angle) * size;
+					cxt.moveTo(0, 0);
+					cxt.lineTo(mainEndX, mainEndY);
+					
+					// 第一层分支
+					const branch1Pos = 0.4;
+					const branch1X = Math.cos(angle) * size * branch1Pos;
+					const branch1Y = Math.sin(angle) * size * branch1Pos;
+					
+					const branch1Angle1 = angle + 30 * Math.PI / 180;
+					const branch1Angle2 = angle - 30 * Math.PI / 180;
+					const branch1Length = size * 0.35;
+					
+					cxt.moveTo(branch1X, branch1Y);
+					cxt.lineTo(branch1X + Math.cos(branch1Angle1) * branch1Length, branch1Y + Math.sin(branch1Angle1) * branch1Length);
+					cxt.moveTo(branch1X, branch1Y);
+					cxt.lineTo(branch1X + Math.cos(branch1Angle2) * branch1Length, branch1Y + Math.sin(branch1Angle2) * branch1Length);
+					
+					// 第二层分支
+					const branch2Pos = 0.7;
+					const branch2X = Math.cos(angle) * size * branch2Pos;
+					const branch2Y = Math.sin(angle) * size * branch2Pos;
+					
+					const branch2Angle1 = angle + 25 * Math.PI / 180;
+					const branch2Angle2 = angle - 25 * Math.PI / 180;
+					const branch2Length = size * 0.25;
+					
+					cxt.moveTo(branch2X, branch2Y);
+					cxt.lineTo(branch2X + Math.cos(branch2Angle1) * branch2Length, branch2Y + Math.sin(branch2Angle1) * branch2Length);
+					cxt.moveTo(branch2X, branch2Y);
+					cxt.lineTo(branch2X + Math.cos(branch2Angle2) * branch2Length, branch2Y + Math.sin(branch2Angle2) * branch2Length);
+				}
+				
+				cxt.stroke();
+				
+				// 中心六角形
+				cxt.beginPath();
+				for (let i = 0; i < 6; i++) {
+					const angle = (i * 60) * Math.PI / 180;
+					const x = Math.cos(angle) * size * 0.15;
+					const y = Math.sin(angle) * size * 0.15;
+					if (i === 0) {
+						cxt.moveTo(x, y);
+					} else {
+						cxt.lineTo(x, y);
+					}
+				}
+				cxt.closePath();
+				cxt.fill();
+			}
+
+			drawComplexSnowflake(cxt, size) {
+				cxt.beginPath();
+				
+				for (let i = 0; i < 6; i++) {
+					const angle = (i * 60) * Math.PI / 180;
+					
+					// 主分支（渐变细度）
+					const mainEndX = Math.cos(angle) * size;
+					const mainEndY = Math.sin(angle) * size;
+					cxt.moveTo(0, 0);
+					cxt.lineTo(mainEndX, mainEndY);
+					
+					// 多层分支
+					const branchPositions = [0.3, 0.5, 0.7, 0.85];
+					const branchAngles = [35, 30, 25, 20];
+					const branchLengths = [0.4, 0.35, 0.3, 0.2];
+					
+					for (let j = 0; j < branchPositions.length; j++) {
+						const branchX = Math.cos(angle) * size * branchPositions[j];
+						const branchY = Math.sin(angle) * size * branchPositions[j];
+						
+						const branchAngle1 = angle + branchAngles[j] * Math.PI / 180;
+						const branchAngle2 = angle - branchAngles[j] * Math.PI / 180;
+						const branchLength = size * branchLengths[j];
+						
+						cxt.moveTo(branchX, branchY);
+						cxt.lineTo(branchX + Math.cos(branchAngle1) * branchLength, branchY + Math.sin(branchAngle1) * branchLength);
+						cxt.moveTo(branchX, branchY);
+						cxt.lineTo(branchX + Math.cos(branchAngle2) * branchLength, branchY + Math.sin(branchAngle2) * branchLength);
+						
+						// 添加次级小分支
+						if (j < 2) {
+							const subBranchX = branchX + Math.cos(branchAngle1) * branchLength * 0.6;
+							const subBranchY = branchY + Math.sin(branchAngle1) * branchLength * 0.6;
+							const subBranchAngle = branchAngle1 + 15 * Math.PI / 180;
+							const subBranchLength = branchLength * 0.4;
+							
+							cxt.moveTo(subBranchX, subBranchY);
+							cxt.lineTo(subBranchX + Math.cos(subBranchAngle) * subBranchLength, subBranchY + Math.sin(subBranchAngle) * subBranchLength);
+						}
+					}
+				}
+				
+				cxt.stroke();
+				
+				// 中心装饰
+				cxt.beginPath();
+				cxt.arc(0, 0, size * 0.12, 0, Math.PI * 2);
+				cxt.fill();
+			}
+
+			drawSimpleStarSnowflake(cxt, size) {
+				cxt.beginPath();
+				
+				// 绘制六角星
+				for (let i = 0; i < 12; i++) {
+					const angle = (i * 30) * Math.PI / 180;
+					const radius = i % 2 === 0 ? size : size * 0.4;
+					const x = Math.cos(angle) * radius;
+					const y = Math.sin(angle) * radius;
+					
+					if (i === 0) {
+						cxt.moveTo(x, y);
+					} else {
+						cxt.lineTo(x, y);
+					}
+				}
+				
+				cxt.closePath();
+				cxt.stroke();
+				cxt.fill();
+				
+				// 添加内部细节
+				cxt.beginPath();
+				for (let i = 0; i < 6; i++) {
+					const angle = (i * 60 + 30) * Math.PI / 180;
+					const x = Math.cos(angle) * size * 0.25;
+					const y = Math.sin(angle) * size * 0.25;
+					
+					if (i === 0) {
+						cxt.moveTo(x, y);
+					} else {
+						cxt.lineTo(x, y);
+					}
+				}
+				cxt.closePath();
+				cxt.stroke();
+			}
+
+			drawFernSnowflake(cxt, size) {
+				cxt.beginPath();
+				
+				for (let i = 0; i < 6; i++) {
+					const angle = (i * 60) * Math.PI / 180;
+					
+					// 主分支
+					const mainEndX = Math.cos(angle) * size;
+					const mainEndY = Math.sin(angle) * size;
+					cxt.moveTo(0, 0);
+					cxt.lineTo(mainEndX, mainEndY);
+					
+					// 蕨类状分支（两侧交替）
+					for (let j = 0; j < 5; j++) {
+						const branchPos = 0.25 + j * 0.15;
+						const branchX = Math.cos(angle) * size * branchPos;
+						const branchY = Math.sin(angle) * size * branchPos;
+						
+						const side = j % 2 === 0 ? 1 : -1;
+						const branchAngle = angle + side * 40 * Math.PI / 180;
+						const branchLength = size * (0.3 - j * 0.04);
+						
+						cxt.moveTo(branchX, branchY);
+						cxt.lineTo(branchX + Math.cos(branchAngle) * branchLength, branchY + Math.sin(branchAngle) * branchLength);
+						
+						// 小分支
+						if (j < 3) {
+							const subBranchAngle = branchAngle + side * 20 * Math.PI / 180;
+							const subBranchLength = branchLength * 0.5;
+							
+							cxt.moveTo(branchX + Math.cos(branchAngle) * branchLength * 0.6, 
+							           branchY + Math.sin(branchAngle) * branchLength * 0.6);
+							cxt.lineTo(branchX + Math.cos(branchAngle) * branchLength * 0.6 + 
+							           Math.cos(subBranchAngle) * subBranchLength,
+							           branchY + Math.sin(branchAngle) * branchLength * 0.6 + 
+							           Math.sin(subBranchAngle) * subBranchLength);
+						}
+					}
+				}
+				
+				cxt.stroke();
+				
+				// 中心点
+				cxt.beginPath();
+				cxt.arc(0, 0, size * 0.1, 0, Math.PI * 2);
+				cxt.fill();
+			}
+
+			update() {
+				this.x = this.fn.x(this.x, this.y);
+				this.y = this.fn.y(this.y, this.y);
+				this.r = this.fn.r(this.r);
+				this.a = this.fn.a(this.a);
+				
+				// 如果雪花越界，重新调整位置
+				if (
+					this.x > windowWidth ||
+					this.x < 0 ||
+					this.y > windowHeight ||
+					this.y < 0 ||
+					this.a <= 0
+				) {
+					// 如果雪花不做限制
+					if (this.limitArray[this.idx] === -1) {
+						this.resetPosition();
+					}
+					// 否则雪花有限制
+					else {
+						if (this.limitArray[this.idx] > 0) {
+							this.resetPosition();
+							this.limitArray[this.idx]--;
+						}
+					}
+				}
+			}
+
+			resetPosition() {
+				this.r = getRandom('fnr', this.config);
+				if (Math.random() > 0.4) {
+					this.x = getRandom('x', this.config);
+					this.y = 0;
+					this.s = getRandom('s', this.config);
+					this.r = getRandom('r', this.config);
+					this.a = getRandom('a', this.config);
+				} else {
+					this.x = windowWidth;
+					this.y = getRandom('y', this.config);
+					this.s = getRandom('s', this.config);
+					this.r = getRandom('r', this.config);
+					this.a = getRandom('a', this.config);
+				}
+				// 重新随机雪花类型
+				this.type = Math.floor(Math.random() * 3);
+			}
+		}
+
+		// 雪花列表类
+		class SnowflakeList {
+			constructor() {
+				this.list = [];
+			}
+
+			push(snowflake) {
+				this.list.push(snowflake);
+			}
+
+			update() {
+				for (let i = 0, len = this.list.length; i < len; i++) {
+					this.list[i].update();
+				}
+			}
+
+			draw(cxt) {
+				for (let i = 0, len = this.list.length; i < len; i++) {
+					this.list[i].draw(cxt);
+				}
+			}
+
+			get(i) {
+				return this.list[i];
+			}
+
+			size() {
+				return this.list.length;
+			}
+		}
+
+		// 获取随机值的函数
+		function getRandom(option, config) {
+			let ret;
+			let random;
+
+			switch (option) {
+				case 'x':
+					ret = Math.random() * windowWidth;
+					break;
+				case 'y':
+					ret = Math.random() * windowHeight;
+					break;
+				case 's':
+					ret = config.size.min + Math.random() * (config.size.max - config.size.min);
+					break;
+				case 'r':
+					ret = Math.random() * 6;
+					break;
+				case 'a':
+					ret = config.opacity.min + Math.random() * (config.opacity.max - config.opacity.min);
+					break;
+				case 'fnx':
+					// 雪花水平移动更缓慢，添加轻微摆动
+					random = config.speed.horizontal.min + Math.random() * (config.speed.horizontal.max - config.speed.horizontal.min);
+					ret = function (x, y) {
+						// 添加正弦波摆动效果
+						const sway = Math.sin(y * 0.01) * 0.5;
+						return x + random + sway;
+					};
+					break;
+				case 'fny':
+					// 雪花垂直下落速度
+					random = config.speed.vertical.min + Math.random() * (config.speed.vertical.max - config.speed.vertical.min);
+					ret = function (_x, y) {
+						return y + random;
+					};
+					break;
+				case 'fnr':
+					ret = function (r) {
+						return r + config.speed.rotation;
+					};
+					break;
+				case 'fna':
+					ret = function (alpha) {
+						return alpha - config.speed.fadeSpeed * 0.01;
+					};
+					break;
+			}
+			return ret;
+		}
+
+		// 雪花管理器类
+		class SnowflakeManager {
+			constructor(config) {
+				this.config = config;
+				this.canvas = null;
+				this.ctx = null;
+				this.snowflakeList = null;
+				this.animationId = null;
+				this.isRunning = false;
+			}
+
+			// 初始化雪花特效
+			async init() {
+				if (!this.config.enable || this.isRunning) {
+					return;
+				}
+
+				this.createCanvas();
+				this.createSnowflakeList();
+				this.startAnimation();
+				this.isRunning = true;
+			}
+
+			// 创建画布
+			createCanvas() {
+				this.canvas = document.createElement('canvas');
+				this.canvas.height = windowHeight;
+				this.canvas.width = windowWidth;
+				this.canvas.setAttribute('style', `position: fixed; left: 0; top: 0; pointer-events: none; z-index: ${this.config.zIndex}; transform: translateZ(0);`);
+				this.canvas.setAttribute('id', 'canvas_snowflake');
+				document.body.appendChild(this.canvas);
+				this.ctx = this.canvas.getContext('2d');
+
+				// 监听窗口大小变化
+				this._boundHandleResize = this.handleResize.bind(this);
+				window.addEventListener('resize', this._boundHandleResize);
+			}
+
+			// 创建雪花列表
+			createSnowflakeList() {
+				if (!this.ctx) return;
+
+				this.snowflakeList = new SnowflakeList();
+				const limitArray = new Array(this.config.sakuraNum).fill(this.config.limitTimes);
+
+				for (let i = 0; i < this.config.sakuraNum; i++) {
+					const randomX = getRandom('x', this.config);
+					const randomY = getRandom('y', this.config);
+					const randomS = getRandom('s', this.config);
+					const randomR = getRandom('r', this.config);
+					const randomA = getRandom('a', this.config);
+					const randomFnx = getRandom('fnx', this.config);
+					const randomFny = getRandom('fny', this.config);
+					const randomFnR = getRandom('fnr', this.config);
+					const randomFnA = getRandom('fna', this.config);
+
+					const snowflake = new Snowflake(
+						randomX,
+						randomY,
+						randomS,
+						randomR,
+						randomA,
+						{
+							x: randomFnx,
+							y: randomFny,
+							r: randomFnR,
+							a: randomFnA,
+						},
+						i,
+						limitArray,
+						this.config
+					);
+
+					snowflake.draw(this.ctx);
+					this.snowflakeList.push(snowflake);
+				}
+			}
+
+			// 开始动画
+			startAnimation() {
+				if (!this.ctx || !this.canvas || !this.snowflakeList) return;
+
+				const animate = () => {
+					if (!this.ctx || !this.canvas || !this.snowflakeList) return;
+
+					this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+					this.snowflakeList.update();
+					this.snowflakeList.draw(this.ctx);
+					this.animationId = requestAnimationFrame(animate);
+				};
+
+				this.animationId = requestAnimationFrame(animate);
+			}
+
+			// 处理窗口大小变化
+			handleResize() {
+				windowWidth = window.innerWidth;
+				windowHeight = window.innerHeight;
+				if (this.canvas) {
+					this.canvas.width = windowWidth;
+					this.canvas.height = windowHeight;
+				}
+			}
+
+			// 停止雪花特效
+			stop() {
+				if (this.animationId) {
+					cancelAnimationFrame(this.animationId);
+					this.animationId = null;
+				}
+
+				if (this.canvas) {
+					document.body.removeChild(this.canvas);
+					this.canvas = null;
+				}
+
+				if (this._boundHandleResize) {
+					window.removeEventListener('resize', this._boundHandleResize);
+					this._boundHandleResize = null;
+				}
+				this.isRunning = false;
+			}
+
+			// 切换雪花特效
+			toggle() {
+				if (this.isRunning) {
+					this.stop();
+				} else {
+					this.init();
+				}
+			}
+
+			// 更新配置
+			updateConfig(newConfig) {
+				const wasRunning = this.isRunning;
+				if (wasRunning) {
+					this.stop();
+				}
+				this.config = newConfig;
+				if (wasRunning && newConfig.enable) {
+					this.init();
+				}
+			}
+
+			// 获取运行状态
+			getIsRunning() {
+				return this.isRunning;
+			}
+		}
+
+		// 创建全局雪花管理器实例
+		let globalSnowflakeManager = null;
+		window.snowflakeManager = null;
+
+		// 初始化雪花特效
+		function initSnowflake(config) {
+			if (globalSnowflakeManager) {
+				globalSnowflakeManager.updateConfig(config);
+			} else {
+				globalSnowflakeManager = new SnowflakeManager(config);
+				window.snowflakeManager = globalSnowflakeManager;
+				if (config.enable) {
+					globalSnowflakeManager.init();
+				}
+			}
+		}
+
+		// 雪花特效初始化
+		(function() {
+			// 全局标记，确保雪花特效只初始化一次
+			if (window.snowflakeInitialized) {
+				return;
+			}
+			
+			// 初始化雪花特效的函数
+			const setupSnowflake = () => {
+				if (window.snowflakeInitialized) return;
+				// 检查用户是否在设置中关闭了雪花特效
+				var storedEnabled = localStorage.getItem("sakuraEnabled");
+				var isEnabled = storedEnabled !== null ? storedEnabled === "true" : sakuraConfig.enable;
+				// 创建管理器并根据用户偏好决定是否启动
+				var cfg = Object.assign({}, sakuraConfig, { enable: isEnabled });
+				initSnowflake(cfg);
+				window.snowflakeInitialized = true;
+			};
+			
+			// 页面加载完成后初始化雪花特效
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', setupSnowflake);
+			} else {
+				setupSnowflake();
+			}
+		})();
+
+		// 监听设置面板的雪花特效切换事件
+		window.addEventListener('sakuraToggle', function(e) {
+			var enabled = e.detail.enabled;
+			var mgr = window.snowflakeManager;
+			if (!mgr) return;
+			if (enabled && !mgr.getIsRunning()) {
+				mgr.config.enable = true;
+				mgr.init();
+			} else if (!enabled && mgr.getIsRunning()) {
+				mgr.stop();
+			}
+		});
+	</script>

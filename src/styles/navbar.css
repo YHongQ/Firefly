@@ -42,11 +42,11 @@
 
 /* 通用滚动阴影：用于提升导航栏与页面内容的分层感 */
 #navbar.navbar-sticky-shadow>div {
-    box-shadow: var(--shadow-navbar) !important;
+    box-shadow: 0 4px 16px oklch(0.72 0.16 var(--hue) / 0.15) !important;
 }
 
 :root.dark #navbar.navbar-sticky-shadow>div {
-    box-shadow: var(--shadow-navbar-dark) !important;
+    box-shadow: 0 4px 16px oklch(0.75 0.16 var(--hue) / 0.25) !important;
 }
 
 /* semifull 模式的透明阶段不单独显示 sticky shadow，避免 8px 和 50px 两段跳变 */
