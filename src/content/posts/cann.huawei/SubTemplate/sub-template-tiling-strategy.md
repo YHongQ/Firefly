@@ -2,7 +2,7 @@
 title: 华为昇腾CANN算子Tiling策略实战：大小核动态负载均衡的减法算子实现
 published: 2026-05-22
 tags: [CANN, 华为昇腾, 算子开发, Tiling策略, AscendC, C++]
-pinned: 
+pinned: false
 category: 技术博客
 draft: false
 ---
