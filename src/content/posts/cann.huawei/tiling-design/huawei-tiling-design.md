@@ -2,9 +2,9 @@
 title: 华为昇腾CANN算子开发：泛化Tiling策略设计深度解析
 published: 2026-05-21
 tags: [CANN, 华为昇腾, 算子开发, AI, AscendC, C++, Tiling]
-pinned: true
+pinned: false
 category: 技术博客
-draft: false
+draft: true
 ---
 
 
