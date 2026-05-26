@@ -508,4 +508,332 @@ class Redisproj2ApplicationTests {
 
 ```
 
+---
+> 再使用连接池进行写入Redis数据时，实际上传入参数是Object类型。它内部会自动将Object类型转换为Redis支持的类型。但是内部会进行序列化操作，将Object类型转换为字节数组。
+>
+> 想要通过客户端访问时，实际上键值对要进行反序列化操作，将字节数组转换为Object类型。
+>
+> 类似于如此：**“Redis1: Hello Redis!”** 我们通过上示例进行写入，但是通过redis-cli查看时，发现键值对**是“Redis1: \xac\xed\x00\x05t\x00\x0cHello Redis!”。**
+
+
+
+#### 3.1.1 序列化设置
+
+1. 序列化器
+
+```java
+
+@Configuration
+public class RedisConfig {
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory); // 设置连接工厂
+        // 设置序列化工具，JSON序列化
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+        template.setKeySerializer(new StringRedisSerializer()); // 设置键序列化器
+        template.setValueSerializer(serializer); // 设置值序列化器
+        template.setHashKeySerializer(new StringRedisSerializer()); // 设置哈希键序列化器
+        template.setHashValueSerializer(serializer); // 设置哈希值序列化器
+        template.afterPropertiesSet();
+        return template;
+    }
+}
+```
+
+- 这种方式序列化可以将Object类型转换为JSON字符串，然后存储到Redis中。
+- 反序列化时，会将JSON字符串转换为Object类型。
+- 结果类似于此：
+
+``` bash
+get user:1
+"{\"@class\":\"com.hong.redisproj2.User\",\"id\":1,\"name\":\"\xe5\xbc\xa0\xe4\xb8\x89\",\"email\":\"zhangsan@example.com\"}"
+
+```
+
+
+2. 使用StringRedisSerializer 和 Objectmapper对对象进行JSON序列化 进行序列化设置
+
+
+- 测试代码
+```java
+package com.hong.redisproj2;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+
+@SpringBootTest
+class StringRedisTemplateTest {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Test
+    void testStringOperations() {
+        String key = "test:string";
+        String value = "Hello StringRedisTemplate!";
+
+        stringRedisTemplate.opsForValue().set(key, value);
+        String retrievedValue = stringRedisTemplate.opsForValue().get(key);
+
+        System.out.println("Key: " + key);
+        System.out.println("Value: " + retrievedValue);
+        System.out.println("Test passed: " + value.equals(retrievedValue));
+    }
+
+    @Test
+    void testObjectSerializationWithObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        User user = new User(1L, "张三", "zhangsan@example.com", 25);
+
+        try {
+            String key = "test:user:" + user.getId();
+
+            String jsonValue = objectMapper.writeValueAsString(user);
+            System.out.println("Serialized JSON: " + jsonValue);
+
+            stringRedisTemplate.opsForValue().set(key, jsonValue);
+
+            String retrievedJson = stringRedisTemplate.opsForValue().get(key);
+            System.out.println("Retrieved JSON: " + retrievedJson);
+
+            User retrievedUser = objectMapper.readValue(retrievedJson, User.class);
+            System.out.println("Retrieved User: " + retrievedUser);
+
+            System.out.println("Test passed: " + user.equals(retrievedUser));
+
+        } catch (JsonProcessingException e) {
+            System.err.println("JSON processing error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testMultipleUsers() {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        User user1 = new User(1L, "张三", "zhangsan@example.com", 25);
+        User user2 = new User(2L, "李四", "lisi@example.com", 30);
+        User user3 = new User(3L, "王五", "wangwu@example.com", 28);
+
+        try {
+            String key1 = "test:user:" + user1.getId();
+            String key2 = "test:user:" + user2.getId();
+            String key3 = "test:user:" + user3.getId();
+
+            stringRedisTemplate.opsForValue().set(key1, objectMapper.writeValueAsString(user1));
+            stringRedisTemplate.opsForValue().set(key2, objectMapper.writeValueAsString(user2));
+            stringRedisTemplate.opsForValue().set(key3, objectMapper.writeValueAsString(user3));
+
+            User retrievedUser1 = objectMapper.readValue(stringRedisTemplate.opsForValue().get(key1), User.class);
+            User retrievedUser2 = objectMapper.readValue(stringRedisTemplate.opsForValue().get(key2), User.class);
+            User retrievedUser3 = objectMapper.readValue(stringRedisTemplate.opsForValue().get(key3), User.class);
+
+            System.out.println("Retrieved User 1: " + retrievedUser1);
+            System.out.println("Retrieved User 2: " + retrievedUser2);
+            System.out.println("Retrieved User 3: " + retrievedUser3);
+
+            System.out.println("All users stored and retrieved successfully!");
+
+        } catch (JsonProcessingException e) {
+            System.err.println("JSON processing error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testHashOperations() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        User user = new User(1L, "赵六", "zhaoliu@example.com", 35);
+
+        try {
+            String hashKey = "test:user:hash:" + user.getId();
+
+            stringRedisTemplate.opsForHash().put(hashKey, "id", String.valueOf(user.getId()));
+            stringRedisTemplate.opsForHash().put(hashKey, "name", user.getName());
+            stringRedisTemplate.opsForHash().put(hashKey, "email", user.getEmail());
+            stringRedisTemplate.opsForHash().put(hashKey, "age", String.valueOf(user.getAge()));
+
+            String retrievedId = (String) stringRedisTemplate.opsForHash().get(hashKey, "id");
+            String retrievedName = (String) stringRedisTemplate.opsForHash().get(hashKey, "name");
+            String retrievedEmail = (String) stringRedisTemplate.opsForHash().get(hashKey, "email");
+            String retrievedAge = (String) stringRedisTemplate.opsForHash().get(hashKey, "age");
+
+            System.out.println("Hash operations test:");
+            System.out.println("ID: " + retrievedId);
+            System.out.println("Name: " + retrievedName);
+            System.out.println("Email: " + retrievedEmail);
+            System.out.println("Age: " + retrievedAge);
+
+            User reconstructedUser = new User(
+                    Long.parseLong(retrievedId),
+                    retrievedName,
+                    retrievedEmail,
+                    Integer.parseInt(retrievedAge)
+            );
+
+            System.out.println("Reconstructed User: " + reconstructedUser);
+
+        } catch (Exception e) {
+            System.err.println("Hash operations error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+
+```
+
+- 测试类对象
+
+``` java
+package com.hong.redisproj2;
+
+public class User {
+    private Long id;
+    private String name;
+    private String email;
+    private Integer age;
+
+    public User() {
+    }
+
+    public User(Long id, String name, String email, Integer age) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", age=" + age +
+                '}';
+    }
+}
+
+
+- 序列化对象注册
+```java
+package com.hong.redisproj2;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+@Configuration
+public class RedisConfig {
+
+    @Bean  // 使用StringRedisSerializer对键进行序列化和反序列化
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    @Bean
+    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
+        StringRedisTemplate template = new StringRedisTemplate();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.afterPropertiesSet();
+        return template;
+    }
+}
+
+
+``` 
+
+- 通过redis-cli查看时，键值对类似于此：
+
+``` bash
+get "test:user:2"
+"{\"id\":2,\"name\":\"\xe6\x9d\x8e\xe5\x9b\x9b\",\"email\":\"lisi@example.com\",\"age\":30}"
+```
+
+## 4. 黑马点评部分
+
+
+### 4.1 Session 登录
+
+![1779763021308](image/Redis/1779763021308.png)
+### 4.2 拦截器在登录校验时线程不安全问题
+
+- 问题：
+  - 拦截器是单例的：Spring 容器中默认一个拦截器 Bean 只有一个对象。
+  - 多个请求线程同时访问：每个请求都会进入同一个拦截器的 preHandle 方法。
+- 解决：使用threadLocal存储登录信息，避免线程不安全问题。
+  - 拦截器中添加threadLocal，用于存储登录信息。
+  - 拦截器中添加方法，用于获取登录信息。preHandleLocal.get() 在开始时获取登录信息，afterCompletionLocal.remove() 在结束时清除登录信息。
+
+---
+> // 拦截器并不归于容器管理，需要手动创建，因此它需要在 ApplicationRunner 中创建
+> // 同时，在使用其他如RedisTemplate等组件时，也需要在 内部或传入，无法进行自动注入
+>
+> 
+---
+
+![1779780053605](image/Redis/1779780053605.png)
+
+> Session 在针对多台Tomcat时，是相互独立的。每个Tomcat实例都有自己的Session管理器，不会共享Session。
+>
+> 解决这种问题就是通过Redis来存储Session信息。
+
+
+
+### 4.3 Redis 进行登录校验管理
+
+![1779780538903](image/Redis/1779780538903.png)
+
+- JWT（JSON Web Token）方式，通过后端生成JWT，作为唯一的标识符（区分每个用户，同时标识Session）。
+![1779780624783](image/Redis/1779780624783.png)
+
+![1779785801069](image/Redis/1779785801069.png)
 
