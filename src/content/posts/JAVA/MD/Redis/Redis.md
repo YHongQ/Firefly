@@ -1252,16 +1252,188 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 ```
 
 
+### 4.5 优惠卷秒杀部分Redis技术
+
+#### 4.5.1 全局ID介绍
+
+- 全局ID：用于生成唯一的全局ID，在分布式系统中，保证ID与任一个节点的ID不冲突。
+![](image/Redis/1779935361748.png)
+
+1. 全局ID生成器
+
+- 全局ID生成器：用于生成唯一的全局ID，在分布式系统中，保证ID与任一个节点的ID不冲突。
+- 全局ID生成器特点： 唯一性、高可用、高性能、递增性、安全性
+
+> 使用Redis 的自增效果（Redis 在系统中并发访问，唯一存在保证）。通过Redis自增+拼接信息，生成唯一的全局ID。
+
+> 全局ID生成器策略： UUID 、 Redis自增 、 snowflake算法
+
+
+``` java
+
+package com.hmdp.utils;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
+@Component
+public class RedisIdWorker {
+
+    private  static final long START_TIMESTAMP = 1694502400000L;
+    private  static final long TIMESTAMP_BIT = 32;
+
+    private StringRedisTemplate stringRedisTemplate;
+
+    public RedisIdWorker(StringRedisTemplate stringRedisTemplate) {
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
+
+    public long nextId(String keyPrefix) {
+
+        // 1. 生成时间戳
+        LocalDateTime localDateTime = LocalDateTime.now();
+        Long nowSecond = localDateTime.toEpochSecond(ZoneOffset.UTC);
+        Long timestamp = nowSecond - START_TIMESTAMP;
+
+        // 2. 生成序列号
+        String now = localDateTime.format(DateTimeFormatter.ofPattern("yyyy:MM:dd"));
+        Long sequence = stringRedisTemplate.opsForValue().increment("ICR:"+keyPrefix+":"+now);
+
+        // 3. 生成全局ID
+        Long id = timestamp << TIMESTAMP_BIT | sequence;
+
+        return id;
+
+    }
+}
+
+``` 
+
+
+### 4.5.2 秒杀券下单
+
+
+- 业务逻辑：
+- ![](image/Redis/1779949717227.png)
+
+- 超卖问题：
+- ![](image/Redis/1779950977524.png)
+
+- ![](image/Redis/1779953418719.png)
+
+- 乐观锁策略：
+- ![](image/Redis/1779953705739.png)
+- ![](image/Redis/1779953758788.png)
+
+ - 乐观锁能够保证业务逻辑的 一致性，避免超卖问题。但是会引发请求大量失败的可能性，导致系统性能下降。
+ - 但是可以设置乐观锁的条件，改善性能。
+ - **如下代码，使用剩余库存是否大于0 来判断是否超卖。如果剩余库存为0，说明超卖，直接返回失败。**
+
+
+``` java
+package com.hmdp.service.impl;
+
+import com.hmdp.dto.Result;
+import com.hmdp.entity.SeckillVoucher;
+import com.hmdp.entity.VoucherOrder;
+import com.hmdp.mapper.SeckillVoucherMapper;
+import com.hmdp.mapper.VoucherOrderMapper;
+import com.hmdp.service.ISeckillVoucherService;
+import com.hmdp.service.IVoucherOrderService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hmdp.utils.RedisIdWorker;
+import com.hmdp.utils.UserHolder;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+
+@Service
+public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, VoucherOrder> implements IVoucherOrderService {
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private RedisIdWorker redisIdWorker; // 用于生成订单id
+
+    // 注入秒杀优惠卷Mapper
+    @Resource
+    private ISeckillVoucherService seckillVoucherService;
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result seckillVoucher(Long voucherId) {
+        // 1 .查询秒杀优惠卷
+        SeckillVoucher seckillvoucher = seckillVoucherService.getById(voucherId);
+        if (seckillvoucher == null) {
+            return Result.fail("优惠卷不存在");
+        }
+        Integer stock = seckillvoucher.getStock();
+        LocalDateTime startTime = seckillvoucher.getBeginTime();
+        LocalDateTime endTime = seckillvoucher.getEndTime();
+        LocalDateTime now = LocalDateTime.now();
+        // 2. 判断秒杀是否开始
+        if (now.isBefore(startTime)) {
+            return Result.fail("秒杀优惠卷未开始");
+        }
+        // 3. 判断秒杀是否已经结束
+        if (now.isAfter(endTime)) {
+            return Result.fail("秒杀优惠卷已结束");
+        }
+        // 4. 判断优惠卷是否已经售罄
+        if (stock <= 0) {
+            return Result.fail("秒杀优惠卷已售罄");
+        }
+
+        // 创建和扣减是一个原子操作，不能拆开
+        // 5. 扣减优惠卷库存
+        seckillvoucher.setStock(stock - 1);
+        boolean result = seckillVoucherService.update().
+                setSql("stock = stock - 1").eq("voucher_id", voucherId).gt("stock", 0)
+                .update();
+        if (!result) {
+            return Result.fail("秒杀优惠卷已售罄");
+        }
+        // 6. 创建订单
+        // 获取订单ID 、 用户ID 、 优惠卷ID
+
+        Long orderId = redisIdWorker.nextId("order");
+//        System.out.println("订单id：" + orderId);
+        // 用户ID 在拦截器中进行获取
+        Long userID = UserHolder.getUser().getId();
+
+        // 插入订单数据入数据库
+        VoucherOrder voucherOrder = new VoucherOrder();
+        voucherOrder.setId(orderId);
+        voucherOrder.setUserId(userID);
+        voucherOrder.setVoucherId(voucherId);
+        voucherOrder.setCreateTime(now);
+
+        save(voucherOrder);
+        // 7. 返回订单id
+
+        return Result.ok(orderId);
+    }
+}
+
+
+
+```
 
 
 
 
 
-
-
-
-
-
+- 秒杀券对于每个用户只能下单一次的设计参考：
+<!-- 引用另一个文档链接 -->
+ [秒杀券下单](lock.md)
 
 
 
