@@ -459,7 +459,9 @@ public class JedisPoolConnectTest {
         <artifactId>spring-boot-starter-data-redis</artifactId>
     </dependency>
 ```
+
 - 配置Redis连接
+
 ```yaml
 
 # 配置Redis连接
@@ -478,6 +480,7 @@ spring:
 ```
 
 - 测试代码
+
 ```java
 package com.hong.redisproj2;
 
@@ -509,13 +512,12 @@ class Redisproj2ApplicationTests {
 ```
 
 ---
+
 > 再使用连接池进行写入Redis数据时，实际上传入参数是Object类型。它内部会自动将Object类型转换为Redis支持的类型。但是内部会进行序列化操作，将Object类型转换为字节数组。
 >
 > 想要通过客户端访问时，实际上键值对要进行反序列化操作，将字节数组转换为Object类型。
 >
 > 类似于如此：**“Redis1: Hello Redis!”** 我们通过上示例进行写入，但是通过redis-cli查看时，发现键值对**是“Redis1: \xac\xed\x00\x05t\x00\x0cHello Redis!”。**
-
-
 
 #### 3.1.1 序列化设置
 
@@ -546,17 +548,16 @@ public class RedisConfig {
 - 反序列化时，会将JSON字符串转换为Object类型。
 - 结果类似于此：
 
-``` bash
+```bash
 get user:1
 "{\"@class\":\"com.hong.redisproj2.User\",\"id\":1,\"name\":\"\xe5\xbc\xa0\xe4\xb8\x89\",\"email\":\"zhangsan@example.com\"}"
 
 ```
 
-
 2. 使用StringRedisSerializer 和 Objectmapper对对象进行JSON序列化 进行序列化设置
 
-
 - 测试代码
+
 ```java
 package com.hong.redisproj2;
 
@@ -690,7 +691,7 @@ class StringRedisTemplateTest {
 
 - 测试类对象
 
-``` java
+```java
 package com.hong.redisproj2;
 
 public class User {
@@ -789,21 +790,21 @@ public class RedisConfig {
 }
 
 
-``` 
+```
 
 - 通过redis-cli查看时，键值对类似于此：
 
-``` bash
+```bash
 get "test:user:2"
 "{\"id\":2,\"name\":\"\xe6\x9d\x8e\xe5\x9b\x9b\",\"email\":\"lisi@example.com\",\"age\":30}"
 ```
 
 ## 4. 黑马点评部分
 
-
 ### 4.1 Session 登录
 
 ![](image/Redis/1779763021308.png)
+
 ### 4.2 拦截器在登录校验时线程不安全问题
 
 - 问题：
@@ -814,10 +815,10 @@ get "test:user:2"
   - 拦截器中添加方法，用于获取登录信息。preHandleLocal.get() 在开始时获取登录信息，afterCompletionLocal.remove() 在结束时清除登录信息。
 
 ---
+
 > // 拦截器并不归于容器管理，需要手动创建，因此它需要在 ApplicationRunner 中创建
 > // 同时，在使用其他如RedisTemplate等组件时，也需要在 内部或传入，无法进行自动注入
->
-> 
+
 ---
 
 ![](image/Redis/1779780053605.png)
@@ -826,17 +827,14 @@ get "test:user:2"
 >
 > 解决这种问题就是通过Redis来存储Session信息。
 
-
-
 ### 4.3 Redis 进行登录校验管理
 
 ![](image/Redis/1779780538903.png)
 
 - JWT（JSON Web Token）方式，通过后端生成JWT，作为唯一的标识符（区分每个用户，同时标识Session）。
-![](image/Redis/1779780624783.png)
+  ![](image/Redis/1779780624783.png)
 
 ![](image/Redis/1779785801069.png)
-
 
 ### 4.4 Redis 进行商户缓存
 
@@ -845,18 +843,17 @@ get "test:user:2"
 - 缓存就是数据交换的中间层，用于临时存储数据，提高数据访问速度。
 
 1. 缓存的作用：
-     - 提高数据访问速度：通过缓存热门数据，减少数据库访问次数。
-     - 减少数据库压力：缓存可以缓存数据库查询结果，避免重复查询。
-     - 提供实时数据：缓存可以提供实时数据，避免依赖数据库。
 
+   - 提高数据访问速度：通过缓存热门数据，减少数据库访问次数。
+   - 减少数据库压力：缓存可以缓存数据库查询结果，避免重复查询。
+   - 提供实时数据：缓存可以提供实时数据，避免依赖数据库。
 2. 缓存的成本：
-     - 存储成本：缓存需要占用内存空间，增加服务器成本。
-     - 计算成本：缓存需要占用CPU资源，增加服务器成本。
-     - 数据一致性问题：缓存数据和数据库数据不一致，需要通过缓存失效策略来解决。
+
+   - 存储成本：缓存需要占用内存空间，增加服务器成本。
+   - 计算成本：缓存需要占用CPU资源，增加服务器成本。
+   - 数据一致性问题：缓存数据和数据库数据不一致，需要通过缓存失效策略来解决。
 
 ![](image/Redis/1779846759124.png)
-
-
 
 #### 4.4.3 缓存更新策略
 
@@ -871,17 +868,18 @@ get "test:user:2"
 1. 缓存穿透
 
 - 缓存穿透是指当前请求的key不存在缓存中，也不存在数据库中，导致数据库压力增加。
-![](image/Redis/1779862593042.png)
+  ![](image/Redis/1779862593042.png)
 - 解决方案：
-    -  缓存空对象，避免数据库压力增加。 这种方式会增加额外内存消耗，可能造成短期的不一致性。
-    -  布隆过滤器，避免缓存穿透。
-    -  并不仅限于此，也可以通过其他方式来避免缓存穿透。
-    -  数据校验，用户权限校验。
-  
+  - 缓存空对象，避免数据库压力增加。 这种方式会增加额外内存消耗，可能造成短期的不一致性。
+  - 布隆过滤器，避免缓存穿透。
+  - 并不仅限于此，也可以通过其他方式来避免缓存穿透。
+  - 数据校验，用户权限校验。
+
 ---
+
 > 缓存穿透的一个解决代码示例：通过缓存空对象，避免数据库压力增加。
 
-``` java 
+```java
 
     @Override
     public Result queryById(Long id) {
@@ -913,12 +911,10 @@ get "test:user:2"
 
 ```
 
-
 1. 缓存雪崩
 
 - 缓存雪崩是指在同一时间，缓存中大量的的数据都失效期，导致数据库压力增加。
-![](image/Redis/1779864118801.png)
-
+  ![](image/Redis/1779864118801.png)
 
 3. 缓存击穿（热点Key问题）
 
@@ -930,18 +926,18 @@ get "test:user:2"
 
 ![](image/Redis/1779864639783.png)
 
-
 - 互斥锁在Redis中可以使用setnx实现，因为setnx命令在key不存在时，才会设置成功，其他情况都会返回失败。
 - 互斥锁的实现原理是：
-    -  当线程A请求获取互斥锁时，会使用setnx命令设置互斥锁。
-    -  如果互斥锁不存在，会设置互斥锁，返回成功。
-    -  如果互斥锁存在，会返回失败。
--  
+  - 当线程A请求获取互斥锁时，会使用setnx命令设置互斥锁。
+  - 如果互斥锁不存在，会设置互斥锁，返回成功。
+  - 如果互斥锁存在，会返回失败。
+- 
+
 ![](image/Redis/1779865012520.png)
 
 - 热点Key互斥锁解决代码示例：
 
-``` java
+```java
 
     // 使用互斥锁来解决热点Key不存在问题
     public Shop queryWithMutex(Long id){
@@ -989,13 +985,10 @@ get "test:user:2"
 
 ```
 
-
-
-
 - 逻辑过期解决热点Key问题：
-![](image/Redis/1779867956048.png)
+  ![](image/Redis/1779867956048.png)
 
-``` java
+```java
 
    @Resource
     private StringRedisTemplate stringRedisTemplate;
@@ -1067,14 +1060,11 @@ get "test:user:2"
     }
 ```
 
-
-
 #### 4.5 Redis缓存工具封装
-
 
 1. java 缓存工具类封装
 
-``` java
+```java
 
 package com.hmdp.utils;
 
@@ -1220,7 +1210,7 @@ public class CacheClient {
 
 2. 缓存工具类调用
 
-``` java
+```java
 @Service
 public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IShopService {
 
@@ -1251,13 +1241,12 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
 ```
 
-
 ### 4.5 优惠卷秒杀部分Redis技术
 
 #### 4.5.1 全局ID介绍
 
 - 全局ID：用于生成唯一的全局ID，在分布式系统中，保证ID与任一个节点的ID不冲突。
-![](image/Redis/1779935361748.png)
+  ![](image/Redis/1779935361748.png)
 
 1. 全局ID生成器
 
@@ -1268,8 +1257,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
 > 全局ID生成器策略： UUID 、 Redis自增 、 snowflake算法
 
-
-``` java
+```java
 
 package com.hmdp.utils;
 
@@ -1311,30 +1299,23 @@ public class RedisIdWorker {
     }
 }
 
-``` 
-
+```
 
 ### 4.5.2 秒杀券下单
 
-
 - 业务逻辑：
 - ![](image/Redis/1779949717227.png)
-
 - 超卖问题：
 - ![](image/Redis/1779950977524.png)
-
 - ![](image/Redis/1779953418719.png)
-
 - 乐观锁策略：
 - ![](image/Redis/1779953705739.png)
 - ![](image/Redis/1779953758788.png)
+- 乐观锁能够保证业务逻辑的 一致性，避免超卖问题。但是会引发请求大量失败的可能性，导致系统性能下降。
+- 但是可以设置乐观锁的条件，改善性能。
+- **如下代码，使用剩余库存是否大于0 来判断是否超卖。如果剩余库存为0，说明超卖，直接返回失败。**
 
- - 乐观锁能够保证业务逻辑的 一致性，避免超卖问题。但是会引发请求大量失败的可能性，导致系统性能下降。
- - 但是可以设置乐观锁的条件，改善性能。
- - **如下代码，使用剩余库存是否大于0 来判断是否超卖。如果剩余库存为0，说明超卖，直接返回失败。**
-
-
-``` java
+```java
 package com.hmdp.service.impl;
 
 import com.hmdp.dto.Result;
@@ -1427,24 +1408,397 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
 ```
 
-
-
-
-
 - 秒杀券对于每个用户只能下单一次的设计参考：
-<!-- 引用另一个文档链接 -->
- [秒杀券下单](lock.md)
+[秒杀券一人一单下单设计介绍](https://firelyblog.2142479640.workers.dev/posts/java/md/redis/lock/)
+![](image/Redis/1780019888863.png)
+
+> 导致上锁失效原因是：JVM锁是通过内部锁监视器来维护的一个常量池
+> 而对于多台JVM，每个JVM都有自己的锁监视器，所以会导致锁失效。 
+![](image/Redis/1780020566577.png)
+
+
+1. (同一个用户对同一批数据发起多个请求引发问题)分布式锁：
+
+- 分布式锁是指在多个节点之间协调的锁，用于确保在多个节点之间只能有一个线程或进程能够访问共享资源。
+- 分布式锁的实现方式有很多种，比如使用Redis的SETNX命令、使用ZookeeperKeeper、使用MySQL的行锁等。
+
+``` bash
+SET lock threadID EX  10 NX   // 设置锁，过期时间为10秒，如果锁不存在则设置成功
+```
+- 存在问题：锁过期时间太短或任务阻塞时间太长，会导致锁失效。
+- ![锁过期时间太短或任务阻塞时间太长导致锁失效](image/Redis/1780023111667.png)
+- 解决方案：续命机制，在任务执行过程中，定时续命，延长锁的过期时间。**锁的释放设置标识判断，是否为当前线程的锁。**
+- ![锁释放时受到阻塞导致异常（需要保证判断锁和释放锁为一个原子操作）](image/Redis/1780023904004.png)
+
+---
+> Redis提供Lua脚本(它在Redis服务器端执行的，确保了原子性)，用于实现分布式锁的原子操作。
+
+``` lua
+-- 获取锁中key的值(Redis中存储的锁（键值对）)
+local key = KEYS[1]
+-- 当前线程标识
+local threadID = ARGV[1]
+
+--  获取锁中key的值
+local id = redis.call("GET", key)
+
+-- 判断锁中key的值与当前线程标识是否相等
+if id == threadID then
+    -- 释放锁
+    redis.call("DEL", key)
+    return 1
+else
+    -- 锁被其他线程占用，无法释放
+    return 0
+end
+
+```
+
+2. Setnx分布式锁的问题
+![](image/Redis/1780284104701.png)
+
+---
+> 可重入锁是指在同一个线程或进程中，可以重复获取同一个锁，而不会导致死锁。
+>
+> 假设有一个线程A，它获取了锁L1，然后在执行过程中，需要获取锁L1，而锁L1已经被线程A获取了，所以会阻塞。
+> 但是如果锁L1是可重入锁，那么线程A可以再次获取锁L1，而不会阻塞。
+
+> Redission提供可重入锁的实现，用于解决以上问题。
+
+
+##### Redisission可重入锁原理
+
+- ReentrantRedisLock（解决可重入锁问题的实现）：redis键值对中不仅存储锁的标识，还存储锁的获取次数。
+- 再次获取锁时，锁的获取次数会增加。释放锁时，锁的获取次数会减少。
+- 当锁的获取次数为0时，锁才会被释放。
+![Redisission可重入锁原理](image/Redis/1780296355559.png)
+
+- **同时保证原子性，确保在获取锁和释放锁时，不会受到其他线程的干扰。使用Lua脚本实现。**
+
+---
+
+- 获取锁Lua脚本：
+``` lua
+-- 获取锁中key的值(Redis中存储的锁（键值对）)
+local key = KEYS[1]
+-- 当前线程标识
+local threadID = ARGV[1]
+
+local releaseTime = ARGV[2]
+
+-- 判断是否存在
+if redis.call("EXISTS", key) == 0 then
+    -- 锁不存在，获取锁
+    redis.call("HSET", key, threadID, 1)
+    redis.call("EXPIRE", key, releaseTime) -- 锁锁过期时间
+    return 1
+end
+
+-- 锁存在，判断是否是当前线程获取锁
+if redis.call("HEXISTS", key, threadID) == 1 then
+    -- 是当前线程获取锁，重入锁
+    redis.call("HINCRBY", key, threadID, 1)
+    redis.call("EXPIRE", key, releaseTime) -- 重置锁锁过期时间
+    return 1
+end
+return 0  -- 锁存在且不是当前线程获取锁，获取锁失败
+
+``` 
+
+
+- 释放锁Lua脚本：
+
+``` lua
+-- 获取锁中key的值(Redis中存储的锁（键值对）)
+local key = KEYS[1]
+-- 当前线程标识
+local threadID = ARGV[1]
+-- 锁锁过期时间
+local releaseTime = ARGV[2]
+
+-- 判断当前锁是否是当前线程获取锁
+if redis.call("HEXISTS", key, threadID) == 0 then
+    -- 锁不存在或不是当前线程获取锁，无法释放
+    return nil
+end
+
+local count = redis.call("HINCRBY", key, threadID, -1)
+if count > 0 then
+    -- 锁的获取次数大于0，不释放锁 重置锁锁过期时间
+    redis.call("EXPIRE", key, releaseTime)
+    return nil
+else
+    -- 锁的获取次数为0，释放锁
+    redis.call("HDEL", key, threadID) 
+    return nil
+end
+return nil
+
+```
+
+
+##### Redisission 重试机制
+![Redisission 重试机制和看门狗机制](image/Redis/1780298596466.png)
+- 消息订阅、信号量实现重试机制、最大重试时间        
+- 当客户端获取锁时，如果无法获取到，会监听锁的消息，当锁被释放时，并且在最大重试时间内，会重试获取锁。
+
+
+##### Redisission 锁过期的安全问题
+
+- 当任务获取锁成功，但是由于任务阻塞未完成，超时释放锁，会导致锁失效。
+
+- 解决方案：续命机制，在任务执行过程中，定时续命，延长锁的过期时间。**锁的释放设置标识判断，是否为当前线程的锁。**
+- 看门狗机制：在任务执行过程中，定时检查锁是否过期，如果过期，会自动释放锁。
+
+##### Redisission 主从一致性问题解决
+
+- 主从一致性问题：Redis主机在写入数据时发生异常宕机，从机会继续写入数据，导致主从数据不一致。
+![](image/Redis/1780299092324.png)
+- 解决方案： MultiLock方式，创建锁需要在所有节点上创建锁，确保锁的创建在所有节点上都生效。如果其中有一个节点创建锁失败，会创建失败。
 
 
 
 
+### 4.5.3 秒杀券的异步操作（消息队列）
+
+![](image/Redis/1780301583577.png)
+![](image/Redis/1780301862185.png)
+- Redis中存储秒杀券的库存数量。
+- Redis中存储秒杀券的订单队列（Set结构保证一人一单）。在添加进入队列这个操作同样需要原子操作，确保队列添加和修改库存的操作是原子的。
 
 
+1. Redis中记录秒杀券的库存数量 和存储秒杀券的订单队列（订单中用户ID和秒杀券ID）Set结构保证一人一单、原子操作
 
 
+``` lua
+
+---
+--- Generated by EmmyLua(https://github.com/EmmyLua)
+--- Created by 123.
+--- DateTime: 2026/6/1 17:02
+---
+
+--  获取优惠券ID
+local voucherID = ARGV[1]
+-- 用户ID
+local userID = ARGV[2]
+
+-- 操作数据
+-- 库存Key
+local stockKey = 'seckill:stock:' .. voucherID
+-- 订单Key
+local orderKey = 'seckill:order:' .. voucherID
+
+-- 脚本业务
+-- 判断库存是否充足，不足则返回失败
+local stock = tonumber(redis.call('GET', stockKey))
+if stock == nil or stock <= 0 then
+
+    return 1
+end
+-- 库存充足，判断用户是否已经下单（限制一人一单）
+if(redis.call('sismember', orderKey, userID) == 1) then
+--     标识用户已经下过单
+
+    return 2
+end
+
+-- 用户没有下过单，且库存充足，需要减库存，添加订单
+redis.call('incrby', stockKey, -1)
+redis.call('sadd', orderKey, userID)
+return 0
 
 
+```
 
+2. 秒杀券的异步操作（消息队列）：
+
+- 线程池：用于处理秒杀订单的异步操作。
+- 消息队列：用于存储秒杀订单的异步操作。
+- 线程任务设置：用于处理秒杀订单的异步操作。
+
+``` java
+package com.hmdp.service.impl;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
+import com.hmdp.dto.Result;
+import com.hmdp.entity.VoucherOrder;
+import com.hmdp.mapper.VoucherOrderMapper;
+import com.hmdp.service.ISeckillVoucherService;
+import com.hmdp.service.IVoucherOrderService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hmdp.utils.RedisIdWorker;
+import com.hmdp.utils.UserHolder;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * <p>
+ *  服务实现类
+ * </p>
+ *
+ * @author 虎哥
+ * @since 2021-12-22
+ */
+@Slf4j
+@Service
+public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, VoucherOrder> implements IVoucherOrderService {
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private RedisIdWorker redisIdWorker; // 用于生成订单id
+
+    // 注入秒杀优惠卷Mapper
+    @Resource
+    private ISeckillVoucherService seckillVoucherService;
+
+    // 注入RedissonClient
+    @Resource
+    private RedissonClient redissonClient;
+
+    private static final DefaultRedisScript<Long> SECKILL_SCRIPT;
+    static {
+        SECKILL_SCRIPT = new DefaultRedisScript<>();
+        SECKILL_SCRIPT.setLocation(new ClassPathResource("seckill.lua"));
+        SECKILL_SCRIPT.setResultType(Long.class);
+    }
+    //    阻塞队列
+    private BlockingQueue<VoucherOrder> voucherOrderBlockingQueue = new ArrayBlockingQueue<VoucherOrder>(1024*1024);
+    // 创建线程池，线程用于完成队列中的任务
+    private static final ExecutorService SECKILL_EXECUTOR_SERVICE = Executors.newFixedThreadPool(10);
+
+    @PostConstruct
+    private void init() { // 将订单处理线程提交到线程池中
+        SECKILL_EXECUTOR_SERVICE.submit(new VocherOrderHandler());
+    }
+    // 订单处理线程,用于处理队列中的订单
+    private class VocherOrderHandler implements Runnable {
+        @Override
+        public void run() {
+            while (true) {
+                try{
+                    VoucherOrder voucherOrder = voucherOrderBlockingQueue.take();
+                    handlerVoucherOrder(voucherOrder);
+                }catch (InterruptedException e){
+                    log.error("订单处理线程被中断", e);
+                }
+            }
+
+        }
+    }
+    // 获取当前类的代理对象，用于子线程在创建订单时调用createOrder方法创建订单
+    private IVoucherOrderService proxy;
+
+    // 处理订单，由线程池中子线程创建订单
+    private void handlerVoucherOrder(VoucherOrder voucherOrder) {
+        // 1. 获取用户ID
+        Long userID = voucherOrder.getUserId();
+        // 2. 创建锁对象
+        RLock lock = redissonClient.getLock("lock:order:" + userID);
+        // 获取锁
+        boolean locked = lock.tryLock();
+        if (!locked) {
+            log.error("用户{"+userID+"}下单失败，获取锁失败");
+            return;
+        }
+        // 3. 使用代理对象创建订单
+        try{
+            proxy.createOrder(voucherOrder);
+        }catch (Throwable e){
+            log.error("用户{"+userID+"}下单失败，创建订单失败", e);
+
+        }finally {
+        // 4. 释放锁
+        lock.unlock();
+               }
+    }
+
+    @Override
+    public Result seckillVoucher(Long voucherId) {
+        Long userID = UserHolder.getUser().getId();
+        // 1. 执行lua脚本，看返回情况 0表示有资格
+        Long result = stringRedisTemplate.execute(SECKILL_SCRIPT,
+                Collections.emptyList(),
+                voucherId.toString(),
+                userID.toString());
+        // 2. 判断结果是否为0
+        int r = result.intValue();
+        if (r == 1) {
+            return Result.fail("库存不足");
+        }
+        if (r == 2) {
+            return Result.fail("您已下单过");
+        }
+
+        // 3. 创建订单 并将订单放入阻塞队列中去
+        Long orderID = redisIdWorker.nextId("order");
+        VoucherOrder voucherOrder = new VoucherOrder();
+        voucherOrder.setId(orderID);
+        voucherOrder.setUserId(userID);
+        voucherOrder.setVoucherId(voucherId);
+        voucherOrderBlockingQueue.add(voucherOrder);
+
+        proxy = (IVoucherOrderService) AopContext.currentProxy();
+//
+        return Result.ok(orderID);
+    }
+
+    @Transactional
+    public void createOrder(VoucherOrder voucherOrder) {
+        // 新增限制一人一单的判断
+        Long userID = voucherOrder.getUserId();
+        Long voucherId = voucherOrder.getVoucherId();
+
+        int count = query().eq("user_id", userID).eq("voucher_id", voucherId).count();
+        if (count > 0) {
+           log.error("用户{"+userID+"}已购买过该优惠卷");
+           return;
+        }
+
+
+        // 创建和扣减是一个原子操作，不能拆开
+        // 5. 扣减优惠卷库存
+        boolean result = seckillVoucherService.update().
+                setSql("stock = stock - 1").eq("voucher_id", voucherId).gt("stock", 0)
+                .update();
+        if (!result) {
+           log.error("用户{"+userID+"}下单失败，优惠卷已售罄");
+           return;
+        }
+        // 6. 创建订单
+        // 获取订单ID 、 用户ID 、 优惠卷ID
+
+        Long orderId = redisIdWorker.nextId("order");
+        // System.out.println("订单id：" + orderId);
+        // 用户ID 在拦截器中进行获取
+
+        save(voucherOrder);
+
+
+    }
+
+}
+
+
+```
+
+
+[Redis黑马点评：秒杀券异步操作：理解消息队列与Lua脚本的结合](https://firelyblog.2142479640.workers.dev/posts/java/md/redis/AsyBlockQueue/)
 
 
 

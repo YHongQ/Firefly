@@ -6,10 +6,13 @@ pinned: true
 category: 学习笔记
 draft: false
 ---
-
 # 秒杀优惠券一人一单——Spring 事务与锁的巧妙配合
 
 在高并发秒杀场景中，实现“一人一单”且保证库存安全扣减，是常见但容易出错的需求。本文通过一段实际代码，剖析如何在 Spring 中结合 `synchronized` 锁、`AopContext.currentProxy()` 以及 `@Transactional` 事务，完成这一逻辑。
+
+[实战篇-07.优惠券秒杀-实现一人一单功能_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1cr4y1671t?vd_source=3495715132f8b407fde241a86af24789&spm_id_from=333.788.player.switch&p=54)
+
+![1780019902460](image/lock/1780019902460.png)
 
 ---
 
@@ -22,8 +25,26 @@ draft: false
 
 我们很容易想到：扣库存和创建订单应该是一个事务，而判断用户是否已购买和扣库存需要加锁。但如果在业务方法上直接加锁并调用本类的另一个带事务的方法，会遇到 **Spring AOP 自调用事务失效** 的问题。
 
+> Spring 的 `@Transactional` 是通过 **AOP 动态代理** 实现的，具体步骤：
+>
+> 1. Spring 会为你的 `VoucherOrderServiceImpl` 创建一个 **代理对象** （JDK 动态代理或 CGLIB 代理）。
+> 2. 当外部调用 `voucherOrderService.seckillVoucher(...)` 时，实际调用的是**代理对象**的方法。
+> 3. 代理对象在方法执行前后，会织入事务管理的逻辑：开启事务 → 调用目标对象的方法 → 提交/回滚事务。
+
+但 **如果目标对象内部通过 `this.xxx()` 调用自己的另一个方法，这个调用直接发生在原始对象（目标对象）上，根本不会经过代理对象** 。
+
+示意：
+
+```
+外部调用 → 代理对象（有事务增强）→ 目标对象.seckillVoucher()
+                                         ↓ (this.createOrder)
+                              目标对象.createOrder()  ← 这里没有代理，事务逻辑完全跳过！
+```
+
+因此，`this.createOrder()` 就是一个 **普通的 Java 方法调用** ，`@Transactional` 注解等于没写。
+
 > Spring AOP 自调用事务失效问题：
-> 
+>
 > - 直接调用本类的事务方法，如 `this.createOrder()`，事务注解失效。
 
 > **原因：** 直接调用时，是目标对象的方法，不会经过代理，事务注解失效。通过代理对象调用时，是代理对象的方法，会经过代理，事务注解生效。
@@ -55,7 +76,7 @@ draft: false
 
 `createOrder()` 方法被 `@Transactional` 标注，Spring 通过 AOP 生成代理对象来管理事务。**在同一类中直接通过 `this.createOrder()` 调用时，调用的是目标对象的方法，不会经过代理，因此事务注解失效。**
 
-``` java
+```java
 
 // 错误示例：事务不会生效
 public Result seckillVoucher(Long voucherId) {
@@ -232,5 +253,3 @@ public class VoucherOrderServiceImpl
 ---
 
 希望这篇博客能帮助你理解 Spring 中事务、代理与锁协同工作的精妙之处。如有疑问，欢迎交流讨论！
-
-
